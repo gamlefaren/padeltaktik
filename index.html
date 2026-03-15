@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Padel Taktik</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+–court-blue: #1a6b8a;
+–court-dark: #0d4a63;
+–ui-bg: #0a0a12;
+–ui-panel: #13131f;
+–ui-border: #2a2a3e;
+–accent: #00d4ff;
+–accent2: #ff6b35;
+–text: #e8e8f0;
+–text-dim: #6b6b8a;
+}
+
+html, body {
+height: 100%;
+background: var(–ui-bg);
+overflow: hidden;
+font-family: ‘SF Pro Display’, -apple-system, sans-serif;
+touch-action: none;
+}
+
+#app {
+display: flex;
+flex-direction: column;
+height: 100dvh;
+height: 100vh;
+}
+
+/* TOP BAR */
+#topbar {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 12px 16px 8px;
+background: var(–ui-panel);
+border-bottom: 1px solid var(–ui-border);
+flex-shrink: 0;
+padding-top: max(12px, env(safe-area-inset-top));
+}
+
+#topbar h1 {
+font-size: 15px;
+font-weight: 700;
+letter-spacing: 0.08em;
+color: var(–accent);
+text-transform: uppercase;
+}
+
+#topbar .subtitle {
+font-size: 10px;
+color: var(–text-dim);
+letter-spacing: 0.12em;
+text-transform: uppercase;
+}
+
+.header-actions {
+display: flex;
+gap: 8px;
+}
+
+.icon-btn {
+width: 36px;
+height: 36px;
+border-radius: 10px;
+background: var(–ui-bg);
+border: 1px solid var(–ui-border);
+color: var(–text);
+font-size: 16px;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.15s;
+user-select: none;
+}
+
+.icon-btn:active { transform: scale(0.92); background: var(–ui-border); }
+.icon-btn.danger { border-color: #ff4444; color: #ff4444; }
+
+/* CANVAS AREA */
+#canvas-container {
+flex: 1;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+background: #0d0d18;
+position: relative;
+}
+
+#court-canvas {
+display: block;
+touch-action: none;
+cursor: crosshair;
+}
+
+/* MODE INDICATOR */
+#mode-indicator {
+position: absolute;
+top: 10px;
+left: 50%;
+transform: translateX(-50%);
+background: rgba(0,0,0,0.75);
+backdrop-filter: blur(8px);
+border: 1px solid var(–ui-border);
+border-radius: 20px;
+padding: 5px 14px;
+font-size: 11px;
+color: var(–accent);
+letter-spacing: 0.1em;
+text-transform: uppercase;
+font-weight: 600;
+pointer-events: none;
+transition: opacity 0.3s;
+}
+
+/* BOTTOM TOOLBAR */
+#toolbar {
+background: var(–ui-panel);
+border-top: 1px solid var(–ui-border);
+padding: 10px 12px;
+padding-bottom: max(10px, env(safe-area-inset-bottom));
+flex-shrink: 0;
+}
+
+.tool-row {
+display: flex;
+gap: 8px;
+justify-content: center;
+align-items: center;
+}
+
+.tool-btn {
+flex: 1;
+max-width: 72px;
+height: 56px;
+border-radius: 14px;
+background: var(–ui-bg);
+border: 1.5px solid var(–ui-border);
+color: var(–text-dim);
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.06em;
+text-transform: uppercase;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 4px;
+cursor: pointer;
+transition: all 0.15s;
+user-select: none;
+}
+
+.tool-btn .icon { font-size: 20px; line-height: 1; }
+.tool-btn:active { transform: scale(0.94); }
+
+.tool-btn.active {
+background: rgba(0,212,255,0.12);
+border-color: var(–accent);
+color: var(–accent);
+}
+
+.tool-btn.team-b.active {
+background: rgba(255,107,53,0.12);
+border-color: var(–accent2);
+color: var(–accent2);
+}
+
+.divider {
+width: 1px;
+height: 40px;
+background: var(–ui-border);
+flex-shrink: 0;
+}
+
+/* COLOR PICKER ROW */
+.line-colors {
+display: flex;
+gap: 6px;
+justify-content: center;
+margin-top: 8px;
+}
+
+.color-dot {
+width: 26px;
+height: 26px;
+border-radius: 50%;
+border: 2px solid transparent;
+cursor: pointer;
+transition: all 0.15s;
+}
+
+.color-dot.active { border-color: white; transform: scale(1.2); }
+.color-dot:active { transform: scale(0.9); }
+
+/* Line style buttons */
+.line-style-row {
+display: flex;
+gap: 6px;
+justify-content: center;
+margin-top: 8px;
+}
+
+.style-btn {
+padding: 4px 10px;
+border-radius: 8px;
+background: var(–ui-bg);
+border: 1px solid var(–ui-border);
+color: var(–text-dim);
+font-size: 10px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.15s;
+letter-spacing: 0.05em;
+}
+
+.style-btn.active {
+background: rgba(0,212,255,0.1);
+border-color: var(–accent);
+color: var(–accent);
+}
+
+/* Draw panel */
+#draw-options {
+display: none;
+margin-top: 0;
+}
+
+#draw-options.visible { display: block; }
+
+/* Tooltip */
+#tooltip {
+position: absolute;
+bottom: 8px;
+left: 50%;
+transform: translateX(-50%);
+background: rgba(0,0,0,0.8);
+color: var(–text-dim);
+font-size: 10px;
+padding: 4px 10px;
+border-radius: 10px;
+pointer-events: none;
+white-space: nowrap;
+opacity: 0;
+transition: opacity 0.3s;
+}
+#tooltip.show { opacity: 1; }
+</style>
+
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div>
+      <div id="topbar" style="all:unset;display:flex;flex-direction:column;">
+        <h1>🎾 Padel Taktik</h1>
+        <div class="subtitle">Ritboard</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="icon-btn" id="btn-undo" title="Ångra">↩</div>
+      <div class="icon-btn danger" id="btn-clear" title="Rensa">🗑</div>
+    </div>
+  </div>
+
+  <div id="canvas-container">
+    <canvas id="court-canvas"></canvas>
+    <div id="mode-indicator">Välj verktyg</div>
+    <div id="tooltip"></div>
+  </div>
+
+  <div id="toolbar">
+    <div class="tool-row">
+      <!-- Team A players -->
+      <div class="tool-btn active" id="tool-playerA1" data-tool="playerA1">
+        <div class="icon">🔵</div>
+        <div>Lag A</div>
+      </div>
+      <div class="tool-btn" id="tool-playerA2" data-tool="playerA2">
+        <div class="icon">🔵</div>
+        <div>Lag A</div>
+      </div>
+      <div class="divider"></div>
+      <!-- Team B players -->
+      <div class="tool-btn team-b" id="tool-playerB1" data-tool="playerB1">
+        <div class="icon">🔴</div>
+        <div>Lag B</div>
+      </div>
+      <div class="tool-btn team-b" id="tool-playerB2" data-tool="playerB2">
+        <div class="icon">🔴</div>
+        <div>Lag B</div>
+      </div>
+      <div class="divider"></div>
+      <!-- Ball -->
+      <div class="tool-btn" id="tool-ball" data-tool="ball">
+        <div class="icon">🎾</div>
+        <div>Boll</div>
+      </div>
+      <div class="divider"></div>
+      <!-- Draw -->
+      <div class="tool-btn" id="tool-draw" data-tool="draw">
+        <div class="icon">✏️</div>
+        <div>Rita</div>
+      </div>
+      <div class="tool-btn" id="tool-move" data-tool="move">
+        <div class="icon">👆</div>
+        <div>Flytta</div>
+      </div>
+    </div>
+
+```
+<div id="draw-options">
+  <div class="line-colors">
+    <div class="color-dot active" data-color="#ffffff" style="background:#ffffff;"></div>
+    <div class="color-dot" data-color="#ffff00" style="background:#ffff00;"></div>
+    <div class="color-dot" data-color="#00ff88" style="background:#00ff88;"></div>
+    <div class="color-dot" data-color="#ff4444" style="background:#ff4444;"></div>
+    <div class="color-dot" data-color="#ff8c00" style="background:#ff8c00;"></div>
+    <div class="color-dot" data-color="#00d4ff" style="background:#00d4ff;"></div>
+  </div>
+  <div class="line-style-row">
+    <div class="style-btn active" data-style="solid">Heldragen</div>
+    <div class="style-btn" data-style="dashed">Streckad</div>
+    <div class="style-btn" data-style="arrow">Pil</div>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('court-canvas');
+const ctx = canvas.getContext('2d');
+const container = document.getElementById('canvas-container');
+const modeIndicator = document.getElementById('mode-indicator');
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentTool = 'playerA1';
+let drawColor = '#ffffff';
+let drawStyle = 'solid';
+let isDrawing = false;
+let drawPoints = [];
+let dragTarget = null;
+let dragOffX = 0, dragOffY = 0;
+let history = [];
+let showDrawOptions = false;
+
+// Court dimensions (logical, scaled to canvas)
+let courtW, courtH, courtX, courtY, scale;
+
+// Objects on the board
+const objects = {
+  playerA1: null,
+  playerA2: null,
+  playerB1: null,
+  playerB2: null,
+  ball: null,
+};
+
+// Strokes (drawn lines)
+let strokes = [];
+let currentStroke = null;
+
+// ─── LAYOUT ──────────────────────────────────────────────────────────────────
+function resize() {
+  const cw = container.clientWidth;
+  const ch = container.clientHeight;
+
+  canvas.width = cw;
+  canvas.height = ch;
+
+  // Padel court ratio: 20m x 10m
+  const courtRatio = 20 / 10; // height/width (portrait on phone)
+  const padding = 24;
+
+  let w, h;
+  if (ch / cw > courtRatio) {
+    w = cw - padding * 2;
+    h = w * courtRatio;
+  } else {
+    h = ch - padding * 2;
+    w = h / courtRatio;
+  }
+
+  courtW = w;
+  courtH = h;
+  courtX = (cw - w) / 2;
+  courtY = (ch - h) / 2;
+  scale = w / 10; // 1 meter = scale px
+
+  // Place players if first time
+  placeDefaults();
+  render();
+}
+
+function placeDefaults() {
+  if (!objects.playerA1) {
+    objects.playerA1 = { x: courtX + courtW * 0.25, y: courtY + courtH * 0.75, label: 'A1' };
+    objects.playerA2 = { x: courtX + courtW * 0.75, y: courtY + courtH * 0.75, label: 'A2' };
+    objects.playerB1 = { x: courtX + courtW * 0.25, y: courtY + courtH * 0.25, label: 'B1' };
+    objects.playerB2 = { x: courtX + courtW * 0.75, y: courtY + courtH * 0.25, label: 'B2' };
+    objects.ball     = { x: courtX + courtW * 0.5,  y: courtY + courtH * 0.5 };
+  }
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawCourt();
+  drawStrokes();
+  if (currentStroke) drawStroke(currentStroke, true);
+  drawPlayers();
+  drawBall();
+}
+
+function drawCourt() {
+  const x = courtX, y = courtY, w = courtW, h = courtH;
+
+  // Court surface
+  const grad = ctx.createLinearGradient(x, y, x, y + h);
+  grad.addColorStop(0,   '#1e7a9a');
+  grad.addColorStop(0.5, '#1a6b8a');
+  grad.addColorStop(1,   '#155e7a');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 6);
+  ctx.fill();
+
+  // Subtle grid texture
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let gx = x; gx <= x + w; gx += scale * 0.5) {
+    ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke();
+  }
+  for (let gy = y; gy <= y + h; gy += scale * 0.5) {
+    ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x + w, gy); ctx.stroke();
+  }
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineJoin = 'miter';
+
+  // Outer boundary
+  ctx.strokeRect(x, y, w, h);
+
+  // Net (center)
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(x, y + h / 2);
+  ctx.lineTo(x + w, y + h / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+
+  // Service boxes (3m from net on each side = 3*scale)
+  const svcDist = scale * 3;
+  // Top half
+  ctx.strokeRect(x, y + h/2 - svcDist, w, svcDist);
+  // Bottom half
+  ctx.strokeRect(x, y + h/2, w, svcDist);
+
+  // Center service line (vertical, in service boxes only)
+  ctx.beginPath();
+  ctx.moveTo(x + w/2, y + h/2 - svcDist);
+  ctx.lineTo(x + w/2, y + h/2 + svcDist);
+  ctx.stroke();
+
+  // Court border glow
+  ctx.shadowColor = 'rgba(0, 180, 220, 0.4)';
+  ctx.shadowBlur = 16;
+  ctx.strokeStyle = 'rgba(0, 200, 240, 0.25)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(x - 1, y - 1, w + 2, h + 2, 7);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'transparent';
+
+  // NET label
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.font = `bold ${Math.max(10, scale * 0.35)}px -apple-system`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('NET', x + w/2, y + h/2);
+
+  // Wall indicators (glass walls)
+  ctx.fillStyle = 'rgba(0, 220, 255, 0.08)';
+  const wallT = 6;
+  ctx.fillRect(x - wallT, y - wallT, w + wallT*2, wallT); // top
+  ctx.fillRect(x - wallT, y + h, w + wallT*2, wallT);     // bottom
+  ctx.fillRect(x - wallT, y, wallT, h);                   // left
+  ctx.fillRect(x + w, y, wallT, h);                       // right
+}
+
+function drawStrokes() {
+  strokes.forEach(s => drawStroke(s, false));
+}
+
+function drawStroke(stroke, isLive) {
+  if (stroke.points.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle = stroke.color;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.globalAlpha = isLive ? 0.85 : 1;
+
+  if (stroke.style === 'dashed') {
+    ctx.setLineDash([8, 6]);
+  } else {
+    ctx.setLineDash([]);
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+  for (let i = 1; i < stroke.points.length; i++) {
+    ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw arrowhead
+  if (stroke.style === 'arrow' && stroke.points.length >= 2) {
+    const last = stroke.points[stroke.points.length - 1];
+    const prev = stroke.points[stroke.points.length - 2];
+    const angle = Math.atan2(last.y - prev.y, last.x - prev.x);
+    const arrowLen = 14;
+    const arrowAngle = 0.45;
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(last.x - arrowLen * Math.cos(angle - arrowAngle), last.y - arrowLen * Math.sin(angle - arrowAngle));
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(last.x - arrowLen * Math.cos(angle + arrowAngle), last.y - arrowLen * Math.sin(angle + arrowAngle));
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawPlayers() {
+  const r = scale * 0.35;
+  ['playerA1', 'playerA2'].forEach(key => {
+    const p = objects[key];
+    if (!p) return;
+    drawPlayerCircle(p.x, p.y, r, '#00d4ff', '#003d52', p.label, key === dragTarget);
+  });
+  ['playerB1', 'playerB2'].forEach(key => {
+    const p = objects[key];
+    if (!p) return;
+    drawPlayerCircle(p.x, p.y, r, '#ff6b35', '#521800', p.label, key === dragTarget);
+  });
+}
+
+function drawPlayerCircle(x, y, r, fillColor, shadowColor, label, isDragging) {
+  ctx.save();
+  if (isDragging) {
+    ctx.shadowColor = fillColor;
+    ctx.shadowBlur = 20;
+    ctx.globalAlpha = 0.9;
+  }
+
+  // Outer glow ring
+  ctx.beginPath();
+  ctx.arc(x, y, r + 3, 0, Math.PI * 2);
+  ctx.fillStyle = fillColor + '33';
+  ctx.fill();
+
+  // Main circle
+  const grad = ctx.createRadialGradient(x - r*0.2, y - r*0.2, r*0.1, x, y, r);
+  grad.addColorStop(0, lighten(fillColor, 40));
+  grad.addColorStop(1, fillColor);
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Border
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Label
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${Math.max(10, r * 0.8)}px -apple-system`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowBlur = 0;
+  ctx.fillText(label, x, y + 0.5);
+
+  ctx.restore();
+}
+
+function drawBall() {
+  const b = objects.ball;
+  if (!b) return;
+  const r = scale * 0.22;
+  ctx.save();
+  if (dragTarget === 'ball') {
+    ctx.shadowColor = '#ccff00';
+    ctx.shadowBlur = 18;
+  }
+
+  // Ball gradient
+  const grad = ctx.createRadialGradient(b.x - r*0.25, b.y - r*0.25, r*0.05, b.x, b.y, r);
+  grad.addColorStop(0, '#e8ff80');
+  grad.addColorStop(0.6, '#b8e000');
+  grad.addColorStop(1, '#7da000');
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Seam lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, r * 0.7, 0.3, Math.PI - 0.3);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, r * 0.7, Math.PI + 0.3, -0.3);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function lighten(hex, amount) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, (num >> 16) + amount);
+  const g = Math.min(255, ((num >> 8) & 0xff) + amount);
+  const b = Math.min(255, (num & 0xff) + amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ─── TOOL SELECTION ──────────────────────────────────────────────────────────
+const toolBtns = document.querySelectorAll('.tool-btn');
+const drawOptions = document.getElementById('draw-options');
+
+function setTool(tool) {
+  currentTool = tool;
+  toolBtns.forEach(b => {
+    b.classList.remove('active');
+    if (b.dataset.tool === tool) b.classList.add('active');
+  });
+
+  const modeNames = {
+    playerA1: '🔵 Lag A – Spelare 1', playerA2: '🔵 Lag A – Spelare 2',
+    playerB1: '🔴 Lag B – Spelare 1', playerB2: '🔴 Lag B – Spelare 2',
+    ball: '🎾 Flytta boll', draw: '✏️ Rita linje', move: '👆 Flytta spelare'
+  };
+  modeIndicator.textContent = modeNames[tool] || tool;
+
+  if (tool === 'draw') {
+    drawOptions.classList.add('visible');
+  } else {
+    drawOptions.classList.remove('visible');
+  }
+}
+
+toolBtns.forEach(btn => {
+  btn.addEventListener('click', () => setTool(btn.dataset.tool));
+  btn.addEventListener('touchend', e => { e.preventDefault(); setTool(btn.dataset.tool); });
+});
+
+// Draw color
+document.querySelectorAll('.color-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    drawColor = dot.dataset.color;
+  });
+  dot.addEventListener('touchend', e => {
+    e.preventDefault();
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    drawColor = dot.dataset.color;
+  });
+});
+
+// Draw style
+document.querySelectorAll('.style-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    drawStyle = btn.dataset.style;
+  });
+  btn.addEventListener('touchend', e => {
+    e.preventDefault();
+    document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    drawStyle = btn.dataset.style;
+  });
+});
+
+// ─── TOUCH / POINTER EVENTS ──────────────────────────────────────────────────
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
+  return {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top
+  };
+}
+
+function hitTest(px, py, objKey) {
+  const obj = objects[objKey];
+  if (!obj) return false;
+  const r = objKey === 'ball' ? scale * 0.22 : scale * 0.35;
+  const dx = px - obj.x, dy = py - obj.y;
+  return Math.sqrt(dx*dx + dy*dy) < r + 12;
+}
+
+function findHitObject(px, py) {
+  const keys = ['playerA1', 'playerA2', 'playerB1', 'playerB2', 'ball'];
+  return keys.find(k => hitTest(px, py, k)) || null;
+}
+
+canvas.addEventListener('touchstart', onStart, { passive: false });
+canvas.addEventListener('touchmove', onMove, { passive: false });
+canvas.addEventListener('touchend', onEnd, { passive: false });
+canvas.addEventListener('mousedown', onStart);
+canvas.addEventListener('mousemove', onMove);
+canvas.addEventListener('mouseup', onEnd);
+
+function onStart(e) {
+  e.preventDefault();
+  const pos = getPos(e);
+
+  if (currentTool === 'move') {
+    const hit = findHitObject(pos.x, pos.y);
+    if (hit) {
+      saveHistory();
+      dragTarget = hit;
+      dragOffX = pos.x - objects[hit].x;
+      dragOffY = pos.y - objects[hit].y;
+    }
+    return;
+  }
+
+  // Specific player/ball placement tools
+  const playerTools = ['playerA1', 'playerA2', 'playerB1', 'playerB2', 'ball'];
+  if (playerTools.includes(currentTool)) {
+    // Check if tapping existing same object → drag it
+    if (hitTest(pos.x, pos.y, currentTool)) {
+      saveHistory();
+      dragTarget = currentTool;
+      dragOffX = pos.x - objects[currentTool].x;
+      dragOffY = pos.y - objects[currentTool].y;
+    } else {
+      // Place / move to tap location
+      saveHistory();
+      objects[currentTool] = {
+        ...objects[currentTool],
+        x: pos.x,
+        y: pos.y
+      };
+      render();
+    }
+    return;
+  }
+
+  if (currentTool === 'draw') {
+    isDrawing = true;
+    currentStroke = { points: [pos], color: drawColor, style: drawStyle };
+  }
+}
+
+function onMove(e) {
+  e.preventDefault();
+  const pos = getPos(e);
+
+  if (dragTarget) {
+    objects[dragTarget].x = pos.x - dragOffX;
+    objects[dragTarget].y = pos.y - dragOffY;
+    render();
+    return;
+  }
+
+  if (isDrawing && currentStroke) {
+    currentStroke.points.push(pos);
+    render();
+  }
+}
+
+function onEnd(e) {
+  e.preventDefault();
+  if (dragTarget) {
+    dragTarget = null;
+    render();
+    return;
+  }
+
+  if (isDrawing && currentStroke) {
+    if (currentStroke.points.length >= 2) {
+      saveHistory();
+      strokes.push(currentStroke);
+    }
+    currentStroke = null;
+    isDrawing = false;
+    render();
+  }
+}
+
+// ─── UNDO / CLEAR ────────────────────────────────────────────────────────────
+function saveHistory() {
+  history.push({
+    objects: JSON.parse(JSON.stringify(objects)),
+    strokes: JSON.parse(JSON.stringify(strokes))
+  });
+  if (history.length > 30) history.shift();
+}
+
+document.getElementById('btn-undo').addEventListener('click', () => {
+  if (history.length === 0) return;
+  const state = history.pop();
+  Object.assign(objects, state.objects);
+  strokes = state.strokes;
+  render();
+  showTooltip('Ångrade');
+});
+
+document.getElementById('btn-undo').addEventListener('touchend', e => {
+  e.preventDefault();
+  if (history.length === 0) return;
+  const state = history.pop();
+  Object.assign(objects, state.objects);
+  strokes = state.strokes;
+  render();
+  showTooltip('Ångrade');
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+  saveHistory();
+  strokes = [];
+  render();
+  showTooltip('Linjer raderade');
+});
+
+document.getElementById('btn-clear').addEventListener('touchend', e => {
+  e.preventDefault();
+  saveHistory();
+  strokes = [];
+  render();
+  showTooltip('Linjer raderade');
+});
+
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+let tooltipTimer;
+function showTooltip(msg) {
+  const el = document.getElementById('tooltip');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(tooltipTimer);
+  tooltipTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', resize);
+resize();
+setTool('move');
+</script>
+
+</body>
+</html>
